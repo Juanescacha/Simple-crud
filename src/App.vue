@@ -47,17 +47,36 @@ function hasValidInput() {
 
 <template>
   <div>
-    <input v-model="prefix" placeholder="Filter prefix" />
+    <input
+      v-model="prefix"
+      placeholder="Filter prefix"
+    />
   </div>
 
-  <select size="5" v-model="selected">
-    <option v-for="name in filteredNames" :key="name">
+  <select
+    size="5"
+    v-model="selected"
+  >
+    <option
+      v-for="name in filteredNames"
+      :key="name"
+    >
       {{ name }}
     </option>
   </select>
 
-  <label>Name: <input id="name" v-model="first" /></label>
-  <label>Surname: <input id="surname" v-model="last" /></label>
+  <label
+    >Name:
+    <input
+      id="name"
+      v-model="first"
+  /></label>
+  <label
+    >Surname:
+    <input
+      id="surname"
+      v-model="last"
+  /></label>
 
   <div class="buttons">
     <button @click="create">Create</button>
