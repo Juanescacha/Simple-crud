@@ -1,36 +1,51 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import App from '@/App.vue';
-import { beforeEach, describe, expect, it } from 'vitest';
 
 describe('App', () => {
   let wrapper;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     wrapper = mount(App);
   });
 
-  // it("initializes with correct elements", () => {
-  // 	expect(wrapper.vm.names).toEqual([
-  // 		"Emil, Hans",
-  // 		"Mustermann, Max",
-  // 		"Teach, Roman",
-  // 	])
-  // 	expect(wrapper.vm.selected).toBe("")
-  // 	expect(wrapper.vm.prefix).toBe("")
-  // 	expect(wrapper.vm.first).toBe("")
-  // 	expect(wrapper.vm.last).toBe("")
-  // })
+  it('filters names correctly', async () => {
+    const filter = wrapper.find('#filter');
+    await filter.setValue('Emil');
 
-  // it("filters names correctly", async () => {
-  // 	await wrapper.setData({ prefix: "Emil" })
-  // 	expect(wrapper.vm.filteredNames).toEqual(["Emil, Hans"])
-  // })
+    expect(wrapper.vm.filteredNames).toEqual(['Emil, Hans']);
+  });
 
-  // it("updates first and last on selected change", async () => {
-  // 	await wrapper.setData({ selected: "Emil, Hans" })
-  // 	expect(wrapper.vm.first).toBe("Hans")
-  // 	expect(wrapper.vm.last).toBe("Emil")
-  // })
+  it('deletes a name correctly', async () => {
+    const select = wrapper.find('select');
+    const deleteButton = wrapper.find('#delete');
+
+    expect(wrapper.findAll('option').length).toBe(3);
+
+    await select.setValue('Emil, Hans');
+    await deleteButton.trigger('click');
+
+    expect(wrapper.findAll('option').length).toBe(2);
+
+    expect(wrapper.vm.names).not.toContain('Emil, Hans');
+    expect(wrapper.html()).not.toContain('Emil, Hans');
+  });
+
+  it('updates a name correctly', async () => {
+    const select = wrapper.find('select');
+    const name = wrapper.find('#name');
+    const surname = wrapper.find('#surname');
+    const update = wrapper.find('#update');
+
+    await select.setValue('Mustermann, Max');
+    await name.setValue('Juan');
+    await surname.setValue('Perez');
+    await update.trigger('click');
+
+    expect(wrapper.findAll('option')[1].text()).toBe('Perez, Juan');
+    expect(wrapper.vm.names).toContain('Perez, Juan');
+    expect(wrapper.vm.names).not.toContain('Mustermann, Max');
+  });
 
   it('creates a new name correctly', () => {
     wrapper.find('#name').setValue('John');
@@ -68,7 +83,7 @@ describe('App', () => {
     expect(numOfHans).toBe(1);
   });
 
-  it('cleans fist and last inputs after creating a name', () => {
+  it('cleans first and last inputs after creating a name', () => {
     const name = wrapper.find('#name');
     const surname = wrapper.find('#surname');
 
@@ -80,7 +95,7 @@ describe('App', () => {
     expect(wrapper.vm.last).toBe('');
   });
 
-  it("doesn't clean fist and last inputs after failing the name creation", () => {
+  it("doesn't clean first and last inputs after failing the name creation", () => {
     const name = wrapper.find('#name');
     const surname = wrapper.find('#surname');
 
@@ -123,15 +138,4 @@ describe('App', () => {
     wrapper.vm.last = {};
     expect(() => wrapper.vm.hasValidInput()).toThrowError();
   });
-
-  // it("updates an existing name correctly", async () => {
-  // 	await wrapper.setData({
-  // 		selected: "Emil, Hans",
-  // 		first: "John",
-  // 		last: "Doe",
-  // 	})
-  // 	wrapper.vm.update()
-  // 	expect(wrapper.vm.names).toContain("Doe, John")
-  // 	expect(wrapper.vm.names).not.toContain("Emil, Hans")
-  // })
 });

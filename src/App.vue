@@ -48,6 +48,7 @@ function hasValidInput() {
 <template>
   <div>
     <input
+      id="filter"
       v-model="prefix"
       placeholder="Filter prefix"
     />
@@ -79,9 +80,24 @@ function hasValidInput() {
   /></label>
 
   <div class="buttons">
-    <button @click="create">Create</button>
-    <button @click="update">Update</button>
-    <button @click="del">Delete</button>
+    <button
+      @click="create"
+      id="create"
+    >
+      Create
+    </button>
+    <button
+      @click="update"
+      id="update"
+    >
+      Update
+    </button>
+    <button
+      @click="del"
+      id="delete"
+    >
+      Delete
+    </button>
   </div>
 </template>
 
