@@ -1,6 +1,19 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import App from '@/App.vue';
+
+/**
+ * FEEDBACK:
+ * Add more describes
+ * Add selectors that may not change in the future. Example: data-ui
+ * De-estructuring of wrapper.vm
+ * Organize test in sanity-check, happy path, edge cases (Maybe with comments and describes)
+ * Descriptive names for test (test-naming conventions)
+ * Add messages to expects (second parameter)
+ * 
+ * TODO:
+ * Modify the code to improve it
+ */
 
 describe('App', () => {
   let wrapper;
@@ -8,6 +21,7 @@ describe('App', () => {
   beforeEach(async () => {
     wrapper = mount(App);
   });
+  afterEach(() => wrapper.unmount());
 
   it('filters names correctly', async () => {
     const filter = wrapper.find('#filter');
@@ -83,7 +97,7 @@ describe('App', () => {
     expect(numOfHans).toBe(1);
   });
 
-  it('cleans first and last inputs after creating a name', () => {
+  it('cleans first and last inputs after creating a name', async () => {
     const name = wrapper.find('#name');
     const surname = wrapper.find('#surname');
 
@@ -91,7 +105,8 @@ describe('App', () => {
     surname.setValue('Doe');
     wrapper.vm.create();
 
-    expect(wrapper.vm.first).toBe('');
+    await wrapper.vm.$nextTick()
+    expect(name.element.value).toBe('');
     expect(wrapper.vm.last).toBe('');
   });
 

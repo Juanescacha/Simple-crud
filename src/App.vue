@@ -57,6 +57,7 @@ function hasValidInput() {
   <select
     size="5"
     v-model="selected"
+    data-ui="crud-user-list"
   >
     <option
       v-for="name in filteredNames"
