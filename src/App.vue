@@ -48,9 +48,9 @@ function hasValidInput() {
 <template>
   <div>
     <input
-      id="filter"
       v-model="prefix"
       placeholder="Filter prefix"
+      data-ui="filter"
     />
   </div>
 
@@ -62,6 +62,7 @@ function hasValidInput() {
     <option
       v-for="name in filteredNames"
       :key="name"
+      data-ui="userList-item"
     >
       {{ name }}
     </option>
@@ -70,32 +71,32 @@ function hasValidInput() {
   <label
     >Name:
     <input
-      id="name"
       v-model="first"
+      data-ui="name"
   /></label>
   <label
     >Surname:
     <input
-      id="surname"
       v-model="last"
+      data-ui="surname"
   /></label>
 
   <div class="buttons">
     <button
       @click="create"
-      id="create"
+      data-ui="create"
     >
       Create
     </button>
     <button
       @click="update"
-      id="update"
+      data-ui="update"
     >
       Update
     </button>
     <button
       @click="del"
-      id="delete"
+      data-ui="delete"
     >
       Delete
     </button>
