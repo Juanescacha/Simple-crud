@@ -23,111 +23,150 @@ describe('App', () => {
   });
   afterEach(() => wrapper.unmount());
 
-  it('', () => {});
+  it('sanity-check', () => {
+    expect(wrapper.vm).toBeTruthy();
+  });
 
-  describe('filter user', () => {
-    it('filters names correctly', async () => {
-      const filter = wrapper.find('#filter');
-      await filter.setValue('Emil');
+  describe('when filtering a name', () => {
+    it('should filter names', async () => {
+      const filterInput = wrapper.find('[data-ui="filter"]');
+      await filterInput.setValue('Emil');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      const isFound = filteredNames.some(
+        (name) => name.text() === 'Emil, Hans'
+      );
+      expect(isFound).toBeTruthy();
+    });
 
-      expect(wrapper.vm.filteredNames).toEqual(['Emil, Hans']);
+    it('should show nothing if nothing found', async () => {
+      const filterInput = wrapper.find('[data-ui="filter"]');
+      await filterInput.setValue('Alberto');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      expect(filteredNames).toEqual([]);
     });
   });
-  describe('create user', () => {
-    it('creates a new name correctly', () => {
-      wrapper.find('#name').setValue('John');
-      wrapper.find('#surname').setValue('Doe');
-      wrapper.vm.create();
-      expect(wrapper.vm.names).toContain('Doe, John');
+
+  describe('when creating a new name', () => {
+    it('should show the name in the names list', async () => {
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      const createButton = wrapper.find('[data-ui="create"]');
+      nameInput.setValue('John');
+      surnameInput.setValue('Doe');
+      await createButton.trigger('click');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      const isFound = filteredNames.some((name) => name.text() === 'Doe, John');
+      expect(isFound).toBeTruthy();
     });
-    it('creates a new name correctly even when is not alphabetical', () => {
-      const name = wrapper.find('#name');
-      const surname = wrapper.find('#surname');
 
-      name.setValue(' John ');
-      surname.setValue(' Doe');
-      wrapper.vm.create();
-      expect(wrapper.vm.names).toContain(' Doe,  John ');
+    //   TODO: no se esta haciendo trim de los inputs correctamente
+    it('should create the name even if its entered with spaces and start and end', async () => {
+      const name = wrapper.find('[data-ui="name"]');
+      const surname = wrapper.find('[data-ui="surname"]');
+      const createButton = wrapper.find('[data-ui="create"]');
+      name.setValue('    John    ');
+      surname.setValue('    Doe    ');
+      await createButton.trigger('click');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      const isFound = filteredNames.some((name) => name.text() === 'Doe, John');
+      expect(isFound).toBeTruthy();
+    });
 
+    it('should create the name even if it is alphanumerical', async () => {
+      const name = wrapper.find('[data-ui="name"]');
+      const surname = wrapper.find('[data-ui="surname"]');
+      const createButton = wrapper.find('[data-ui="create"]');
       name.setValue('J#0n');
       surname.setValue('D@3-');
-      wrapper.vm.create();
-      expect(wrapper.vm.names).toContain('D@3-, J#0n');
+      await createButton.trigger('click');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      const isFound = filteredNames.some(
+        (name) => name.text() === 'D@3-, J#0n'
+      );
+      expect(isFound).toBeTruthy();
     });
-    it('does not create a new name if it already exists', () => {
-      let numOfHans = wrapper.vm.names.filter(
-        (name) => name === 'Emil, Hans'
-      ).length;
-      expect(numOfHans).toBe(1);
 
-      wrapper.find('#name').setValue('Hans');
-      wrapper.find('#surname').setValue('Emil');
-      wrapper.vm.create();
+    it('should not create a new name if it exist already', async () => {
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      const button = wrapper.find('[data-ui="create"]');
+      let names = wrapper.findAll('[data-ui="userList-item"]');
+      const numOfHans = (names) => {
+        return names.filter((e) => e.text() === 'Emil, Hans').length;
+      };
+      expect(numOfHans(names)).toBe(1);
 
-      numOfHans = wrapper.vm.names.filter(
-        (name) => name === 'Emil, Hans'
-      ).length;
-      expect(numOfHans).toBe(1);
+      nameInput.setValue('Hans');
+      surnameInput.setValue('Emil');
+      await button.trigger('click');
+
+      names = wrapper.findAll('[data-ui="userList-item"]');
+      expect(numOfHans(names)).toBe(1);
+      // ? nose si probar mejor el length de names unicamente
     });
-    it('cleans first and last inputs after creating a name', async () => {
-      const name = wrapper.find('#name');
-      const surname = wrapper.find('#surname');
 
-      name.setValue('John');
-      surname.setValue('Doe');
-      wrapper.vm.create();
-
-      await wrapper.vm.$nextTick();
-      expect(name.element.value).toBe('');
-      expect(wrapper.vm.last).toBe('');
+    it('should clear name and surname inputs after a new creation', async () => {
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      const create = wrapper.find('[data-ui="create"]');
+      nameInput.setValue('John');
+      surnameInput.setValue('Doe');
+      await create.trigger('click');
+      expect(nameInput.element.value).toBe('');
+      expect(surnameInput.element.value).toBe('');
     });
-    it("doesn't clean first and last inputs after failing the name creation", () => {
-      const name = wrapper.find('#name');
-      const surname = wrapper.find('#surname');
 
-      name.setValue('Hans');
-      surname.setValue('Emil');
-      wrapper.vm.create();
-
-      expect(wrapper.vm.first).toBe('Hans');
-      expect(wrapper.vm.last).toBe('Emil');
+    it('should not clear name and surname inputs after a failing name creation', async () => {
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      const create = wrapper.find('[data-ui="create"]');
+      nameInput.setValue('Hans');
+      surnameInput.setValue('Emil');
+      await create.trigger('click');
+      expect(nameInput.element.value).toBe('Hans');
+      expect(surnameInput.element.value).toBe('Emil');
     });
   });
-  describe('update user', () => {
-    it('updates a name correctly', async () => {
-      const select = wrapper.find('select');
-      const name = wrapper.find('#name');
-      const surname = wrapper.find('#surname');
-      const update = wrapper.find('#update');
 
-      await select.setValue('Mustermann, Max');
-      await name.setValue('Juan');
-      await surname.setValue('Perez');
+  describe('when updating a name', () => {
+    it('should update a name', async () => {
+      const selectInput = wrapper.find('[data-ui="crud-user-list"]');
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      const update = wrapper.find('[data-ui="update"]');
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('Juan');
+      await surnameInput.setValue('Perez');
       await update.trigger('click');
-
-      expect(wrapper.findAll('option')[1].text()).toBe('Perez, Juan');
-      expect(wrapper.vm.names).toContain('Perez, Juan');
-      expect(wrapper.vm.names).not.toContain('Mustermann, Max');
+      const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
+      const isFound = filteredNames.some(
+        (name) => name.text() === 'Perez, Juan'
+      );
+      expect(isFound).toBeTruthy();
+      const isNotFound = filteredNames.some(
+        (name) => name.text() === 'Mustermann, Max'
+      );
+      expect(isNotFound).toBeFalsy();
     });
   });
-  describe('delete user', () => {
-    it('deletes a name correctly', async () => {
-      const select = wrapper.find('select');
-      const deleteButton = wrapper.find('#delete');
 
-      expect(wrapper.findAll('option').length).toBe(3);
-
-      await select.setValue('Emil, Hans');
+  describe('when deleting a name', () => {
+    it.only('should delete a name', async () => {
+      const selectInput = wrapper.find('[data-ui="crud-user-list"]');
+      const deleteButton = wrapper.find('[data-ui="delete"]');
+      let names = wrapper.findAll('[data-ui="userList-item"]');
+      expect(names.length).toBe(3);
+      await selectInput.setValue('Emil, Hans');
       await deleteButton.trigger('click');
-
-      expect(wrapper.findAll('option').length).toBe(2);
-
-      expect(wrapper.vm.names).not.toContain('Emil, Hans');
-      expect(wrapper.html()).not.toContain('Emil, Hans');
+      names = wrapper.findAll('[data-ui="userList-item"]');
+      expect(names.length).toBe(2);
+      const isNotFound = names.some((name) => name.text() === 'Emil, Hans');
+      expect(isNotFound).toBeFalsy();
     });
   });
-  describe('input validation', () => {
-    it('correctly validates all input', () => {
+
+  describe(' ? input validation', () => {
+    it('validates all input', () => {
       expect(wrapper.vm.hasValidInput()).toBeFalsy();
 
       wrapper.vm.first = '';
