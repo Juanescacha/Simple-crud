@@ -28,7 +28,7 @@ function create() {
 function update() {
   if (hasValidInput() && selected.value) {
     const i = names.indexOf(selected.value);
-    names[i] = selected.value = `${last.value}, ${first.value}`;
+    names[i] = selected.value = `${last.value.trim()}, ${first.value.trim()}`;
   }
 }
 

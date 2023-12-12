@@ -24,11 +24,24 @@ describe('App', () => {
   afterEach(() => wrapper.unmount());
 
   it('sanity-check', () => {
-    expect(wrapper.vm).toBeTruthy();
+    expect(wrapper.exists()).toBeTruthy();
+  });
+
+  it('should have names list initialized', () => {
+    expect(wrapper.vm.names).toEqual([
+      'Emil, Hans',
+      'Mustermann, Max',
+      'Teach, Roman',
+    ]);
   });
 
   describe('when filtering a name', () => {
-    it('should filter names', async () => {
+    it('sanity check', () => {
+      const filterInput = wrapper.find('[data-ui="filter"]');
+      expect(filterInput.exists()).toBeTruthy();
+    });
+
+    it('should show matching filter name', async () => {
       const filterInput = wrapper.find('[data-ui="filter"]');
       await filterInput.setValue('Emil');
       const filteredNames = wrapper.findAll('[data-ui="userList-item"]');
@@ -47,6 +60,10 @@ describe('App', () => {
   });
 
   describe('when creating a new name', () => {
+    it('sanity check', () => {
+      const createButton = wrapper.find('[data-ui="create"]');
+      expect(createButton.exists()).toBeTruthy();
+    });
     it('should show the name in the names list', async () => {
       const nameInput = wrapper.find('[data-ui="name"]');
       const surnameInput = wrapper.find('[data-ui="surname"]');
@@ -128,6 +145,11 @@ describe('App', () => {
   });
 
   describe('when updating a name', () => {
+    it('sanity check', () => {
+      const update = wrapper.find('[data-ui="update"]');
+      expect(update.exists()).toBeTruthy();
+    });
+
     it('should update a name', async () => {
       const selectInput = wrapper.find('[data-ui="crud-user-list"]');
       const nameInput = wrapper.find('[data-ui="name"]');
@@ -165,6 +187,13 @@ describe('App', () => {
   });
 
   describe('when the user input is validated', () => {
+    it('sanity check', () => {
+      const nameInput = wrapper.find('[data-ui="name"]');
+      const surnameInput = wrapper.find('[data-ui="surname"]');
+      expect(nameInput.exists()).toBeTruthy();
+      expect(surnameInput.exists()).toBeTruthy();
+    });
+
     it('should be falsy when both inputs are empty', () => {
       expect(wrapper.vm.hasValidInput()).toBeFalsy();
     });
