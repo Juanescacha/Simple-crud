@@ -165,37 +165,62 @@ describe('App', () => {
     });
   });
 
-  describe(' ? input validation', () => {
-    it('validates all input', () => {
+  describe('when the user input is validated', () => {
+    it('should be falsy when both inputs are empty', () => {
       expect(wrapper.vm.hasValidInput()).toBeFalsy();
-
-      wrapper.vm.first = '';
-      wrapper.vm.last = 'Doe';
-      expect(wrapper.vm.hasValidInput()).toBeFalsy();
-
-      wrapper.vm.first = 'John';
-      wrapper.vm.last = '';
-      expect(wrapper.vm.hasValidInput()).toBeFalsy();
-
-      wrapper.vm.first = ' ';
-      wrapper.vm.last = '        ';
-      expect(wrapper.vm.hasValidInput()).toBeFalsy();
-
-      wrapper.vm.first = 'John';
-      wrapper.vm.last = 'Doe ';
-      expect(wrapper.vm.hasValidInput()).toBeTruthy();
     });
 
-    it('throws an error on the input validation if first or last are not strings', () => {
-      wrapper.vm.first = null;
-      expect(() => wrapper.vm.hasValidInput()).toThrowError();
+    it('should be falsy when one of the two inputs are empty', () => {
+      const { vm: componentInstance } = wrapper;
+      componentInstance.first = '';
+      componentInstance.last = 'Doe';
+      expect(
+        componentInstance.hasValidInput(),
+        'should be falsy when the first input is empty'
+      ).toBeFalsy();
 
-      wrapper.vm.first = 1;
-      expect(() => wrapper.vm.hasValidInput()).toThrowError();
+      componentInstance.first = 'John';
+      componentInstance.last = '';
+      expect(
+        componentInstance.hasValidInput(),
+        'should be falsy when the  input is empty'
+      ).toBeFalsy();
+    });
 
-      wrapper.vm.first = 'John';
-      wrapper.vm.last = {};
-      expect(() => wrapper.vm.hasValidInput()).toThrowError();
+    it('should be falsy when the inputs are just spaces', () => {
+      const { vm: componentInstance } = wrapper;
+      componentInstance.first = ' ';
+      componentInstance.last = '        ';
+      expect(componentInstance.hasValidInput()).toBeFalsy();
+    });
+
+    it('should be truthy when the inputs have characters different to spaces', () => {
+      const { vm: componentInstance } = wrapper;
+      componentInstance.first = 'John';
+      componentInstance.last = 'Doe ';
+      expect(componentInstance.hasValidInput()).toBeTruthy();
+    });
+
+    it('should throw an error on the input validation if first or last are not strings', () => {
+      const { vm: componentInstance } = wrapper;
+      componentInstance.first = null;
+      expect(
+        () => componentInstance.hasValidInput(),
+        'throws error when an input is null'
+      ).toThrowError();
+
+      componentInstance.first = 1;
+      expect(
+        () => componentInstance.hasValidInput(),
+        'throws error when an input is a type number'
+      ).toThrowError();
+
+      componentInstance.first = 'John';
+      componentInstance.last = {};
+      expect(
+        () => componentInstance.hasValidInput(),
+        'throws error when an input is an object'
+      ).toThrowError();
     });
   });
 });
