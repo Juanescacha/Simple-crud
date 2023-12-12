@@ -59,8 +59,7 @@ describe('App', () => {
       expect(isFound).toBeTruthy();
     });
 
-    //   TODO: no se esta haciendo trim de los inputs correctamente
-    it.skip('should create the name even if its entered with spaces and start and end', async () => {
+    it('should create the name even if its entered with spaces and start and end', async () => {
       const name = wrapper.find('[data-ui="name"]');
       const surname = wrapper.find('[data-ui="surname"]');
       const createButton = wrapper.find('[data-ui="create"]');
@@ -72,7 +71,7 @@ describe('App', () => {
       expect(isFound).toBeTruthy();
     });
 
-    it('should create the name even if it is alphanumerical', async () => {
+    it('should not create the name when it contains numbers or charater', async () => {
       const name = wrapper.find('[data-ui="name"]');
       const surname = wrapper.find('[data-ui="surname"]');
       const createButton = wrapper.find('[data-ui="create"]');
@@ -83,7 +82,7 @@ describe('App', () => {
       const isFound = filteredNames.some(
         (name) => name.text() === 'D@3-, J#0n'
       );
-      expect(isFound).toBeTruthy();
+      expect(isFound).not.toBeTruthy();
     });
 
     it('should not create a new name if it exist already', async () => {

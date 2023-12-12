@@ -17,7 +17,7 @@ watch(selected, (name) => {
 
 function create() {
   if (hasValidInput()) {
-    const fullName = `${last.value}, ${first.value}`;
+    const fullName = `${last.value.trim()}, ${first.value.trim()}`;
     if (!names.includes(fullName)) {
       names.push(fullName);
       first.value = last.value = '';
@@ -41,7 +41,11 @@ function del() {
 }
 
 function hasValidInput() {
-  return first.value.trim() && last.value.trim();
+  const validNameRegex = /^[a-zA-Z]+$/;
+  const name = first.value.trim();
+  const surname = last.value.trim();
+
+  return validNameRegex.test(name) && validNameRegex.test(surname);
 }
 </script>
 
