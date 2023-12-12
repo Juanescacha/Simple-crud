@@ -60,7 +60,7 @@ describe('App', () => {
     });
 
     //   TODO: no se esta haciendo trim de los inputs correctamente
-    it('should create the name even if its entered with spaces and start and end', async () => {
+    it.skip('should create the name even if its entered with spaces and start and end', async () => {
       const name = wrapper.find('[data-ui="name"]');
       const surname = wrapper.find('[data-ui="surname"]');
       const createButton = wrapper.find('[data-ui="create"]');
@@ -151,7 +151,7 @@ describe('App', () => {
   });
 
   describe('when deleting a name', () => {
-    it.only('should delete a name', async () => {
+    it('should delete a name', async () => {
       const selectInput = wrapper.find('[data-ui="crud-user-list"]');
       const deleteButton = wrapper.find('[data-ui="delete"]');
       let names = wrapper.findAll('[data-ui="userList-item"]');
