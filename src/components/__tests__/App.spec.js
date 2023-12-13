@@ -10,9 +10,33 @@ import App from '@/App.vue';
 
 describe('App', () => {
   let wrapper;
+  let nameInput;
+  let surnameInput;
+  let selectInput;
+  let namesList;
+  let filterInput;
+  let createButton;
+  let updateButton;
+  let deleteButton;
+
+  const updateNamesList = () => {
+    namesList = wrapper.findAll('[data-ui="userList-item"]');
+  };
+
+  const timesFound = (name) => {
+    return namesList.filter((e) => e.text() === name).length;
+  };
 
   beforeEach(async () => {
     wrapper = mount(App);
+    nameInput = wrapper.find('[data-ui="name"]');
+    surnameInput = wrapper.find('[data-ui="surname"]');
+    selectInput = wrapper.find('[data-ui="crud-user-list"]');
+    namesList = wrapper.findAll('[data-ui="userList-item"]');
+    filterInput = wrapper.find('[data-ui="filter"]');
+    createButton = wrapper.find('[data-ui="create"]');
+    updateButton = wrapper.find('[data-ui="update"]');
+    deleteButton = wrapper.find('[data-ui="delete"]');
   });
   afterEach(() => wrapper.unmount());
 
@@ -21,33 +45,27 @@ describe('App', () => {
     expect(wrapper.exists()).toBeTruthy();
   });
 
-  it('should have names list initialized', () => {
-    expect(wrapper.vm.names).toEqual([
-      'Emil, Hans',
-      'Mustermann, Max',
-      'Teach, Roman',
-    ]);
+  it('should have the default names list initialized', () => {
+    const names = namesList.map((e) => e.text());
+    expect(names).toEqual(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
   });
 
   describe('when filtering a name', () => {
     // sanity check
     it('should exist the filter input field', () => {
-      const xd = wrapper.find('[data-ui="filter"]');
-      expect(xd.exists()).toBeTruthy();
+      expect(filterInput.exists()).toBeTruthy();
     });
 
+    // TODO - Add test for filter input
     it('should show matching filter name', async () => {
-      const filterInput = wrapper.find('[data-ui="filter"]');
       await filterInput.setValue('Emil');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
-      const isFound = namesList.some((e) => e.text() === 'Emil, Hans');
-      expect(isFound).toBeTruthy();
+      updateNamesList();
+      expect(timesFound('Emil, Hans')).toBe(1);
     });
 
     it('should show nothing if nothing found', async () => {
-      const filterInput = wrapper.find('[data-ui="filter"]');
       await filterInput.setValue('Alberto');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
+      updateNamesList();
       expect(namesList).toEqual([]);
     });
   });
@@ -55,65 +73,44 @@ describe('App', () => {
   describe('when creating a new name', () => {
     // sanity check
     it('should exist the create button', () => {
-      const createButton = wrapper.find('[data-ui="create"]');
       expect(createButton.exists()).toBeTruthy();
     });
     it('should show the name in the names list', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
       nameInput.setValue('John');
       surnameInput.setValue('Doe');
       await createButton.trigger('click');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
-      const isFound = namesList.some((e) => e.text() === 'Doe, John');
-      expect(isFound).toBeTruthy();
+      updateNamesList();
+      expect(timesFound('Doe, John')).toBe(1);
     });
 
     it('should create the name even if its entered with spaces and start and end', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
       nameInput.setValue('    John    ');
       surnameInput.setValue('    Doe    ');
       await createButton.trigger('click');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
-      const isFound = namesList.some((name) => name.text() === 'Doe, John');
-      expect(isFound).toBeTruthy();
+      updateNamesList();
+      expect(timesFound('Doe, John')).toBe(1);
     });
 
     it('should not create the name when it contains numbers or charater', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
       nameInput.setValue('J#0n');
       surnameInput.setValue('D@3-');
+      expect(namesList.length).toBe(3);
       await createButton.trigger('click');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
-      const isFound = namesList.some((name) => name.text() === 'D@3-, J#0n');
-      expect(isFound).toBeFalsy();
+      updateNamesList();
+      expect(namesList.length).toBe(3);
+      expect(timesFound('D@3-, J#0n')).toBe(0);
     });
 
     it('should not create a new name if it exist already', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
-      let names = wrapper.findAll('[data-ui="userList-item"]');
-      const numOfHans = (names) => {
-        return names.filter((e) => e.text() === 'Emil, Hans').length;
-      };
-      expect(numOfHans(names)).toBe(1);
+      expect(timesFound('Emil, Hans')).toBe(1);
       nameInput.setValue('Hans');
       surnameInput.setValue('Emil');
       await createButton.trigger('click');
-      names = wrapper.findAll('[data-ui="userList-item"]');
-      expect(numOfHans(names)).toBe(1);
+      updateNamesList();
+      expect(timesFound('Emil, Hans')).toBe(1);
     });
 
     it('should clear name and surname inputs after a new creation', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
       nameInput.setValue('John');
       surnameInput.setValue('Doe');
       await createButton.trigger('click');
@@ -122,9 +119,6 @@ describe('App', () => {
     });
 
     it('should not clear name and surname inputs after a failing name creation', async () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const createButton = wrapper.find('[data-ui="create"]');
       nameInput.setValue('Hans');
       surnameInput.setValue('Emil');
       await createButton.trigger('click');
@@ -136,52 +130,38 @@ describe('App', () => {
   describe('when updating a name', () => {
     // sanity check
     it('should exist the update button', () => {
-      const updateButton = wrapper.find('[data-ui="update"]');
       expect(updateButton.exists()).toBeTruthy();
     });
 
     it('should update a name', async () => {
-      const selectInput = wrapper.find('[data-ui="crud-user-list"]');
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
-      const updateButton = wrapper.find('[data-ui="update"]');
       await selectInput.setValue('Mustermann, Max');
       await nameInput.setValue('Juan');
       await surnameInput.setValue('Perez');
       await updateButton.trigger('click');
-      const namesList = wrapper.findAll('[data-ui="userList-item"]');
-      let isFound = namesList.some((name) => name.text() === 'Perez, Juan');
-      expect(isFound).toBeTruthy();
-      isFound = namesList.some((name) => name.text() === 'Mustermann, Max');
-      expect(isFound).toBeFalsy();
+      updateNamesList();
+      expect(timesFound('Perez, Juan')).toBe(1);
+      expect(timesFound('Mustermann, Max')).toBe(0);
     });
   });
 
   describe('when deleting a name', () => {
     // sanity check
     it('should exist the delete button', () => {
-      const deleteButton = wrapper.find('[data-ui="delete"]');
       expect(deleteButton.exists()).toBeTruthy();
     });
     it('should delete a name', async () => {
-      const selectInput = wrapper.find('[data-ui="crud-user-list"]');
-      const deleteButton = wrapper.find('[data-ui="delete"]');
-      let names = wrapper.findAll('[data-ui="userList-item"]');
-      expect(names.length).toBe(3);
+      expect(namesList.length).toBe(3);
       await selectInput.setValue('Emil, Hans');
       await deleteButton.trigger('click');
-      names = wrapper.findAll('[data-ui="userList-item"]');
-      expect(names.length).toBe(2);
-      let isFound = names.some((name) => name.text() === 'Emil, Hans');
-      expect(isFound).toBeFalsy();
+      updateNamesList();
+      expect(namesList.length).toBe(2);
+      expect(timesFound('Emil, Hans')).toBe(0);
     });
   });
 
   describe('when the user input is validated', () => {
     // sanity check
     it('should exist the name and surname inputs', () => {
-      const nameInput = wrapper.find('[data-ui="name"]');
-      const surnameInput = wrapper.find('[data-ui="surname"]');
       expect(nameInput.exists()).toBeTruthy();
       expect(surnameInput.exists()).toBeTruthy();
     });
