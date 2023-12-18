@@ -8,7 +8,9 @@ const first = ref('');
 const last = ref('');
 
 const filteredNames = computed(() =>
-  names.filter((n) => n.toLowerCase().startsWith(prefix.value.toLowerCase()))
+  names.filter((n) =>
+    n.toLowerCase().startsWith(prefix.value.trim().toLowerCase())
+  )
 );
 
 watch(selected, (name) => {
@@ -26,9 +28,10 @@ function create() {
 }
 
 function update() {
-  if (hasValidInput() && selected.value) {
+  const fullName = `${last.value.trim()}, ${first.value.trim()}`;
+  if (hasValidInput() && selected.value && !names.includes(fullName)) {
     const i = names.indexOf(selected.value);
-    names[i] = selected.value = `${last.value.trim()}, ${first.value.trim()}`;
+    names[i] = selected.value = fullName;
   }
 }
 
