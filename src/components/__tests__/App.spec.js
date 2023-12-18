@@ -2,12 +2,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import App from '@/App.vue';
 
-/**
- * FEEDBACK:
- * Organize test in sanity-check, happy path, edge cases (Maybe with comments and describes)
- * Add messages to expects (second parameter)
- */
-
 describe('App', () => {
   let wrapper;
   let nameInput;
@@ -55,18 +49,33 @@ describe('App', () => {
     it('should exist the filter input field', () => {
       expect(filterInput.exists()).toBeTruthy();
     });
-
-    // TODO - Add test for filter input
+    // happy path
     it('should show matching filter name', async () => {
       await filterInput.setValue('Emil');
       updateNamesList();
       expect(timesFound('Emil, Hans')).toBe(1);
+      expect(namesList.length).toBe(1);
     });
 
     it('should show nothing if nothing found', async () => {
       await filterInput.setValue('Alberto');
       updateNamesList();
       expect(namesList).toEqual([]);
+      expect(namesList.length).toBe(0);
+    });
+    // edge cases
+    it('should show all names if filter is empty', async () => {
+      await filterInput.setValue('');
+      updateNamesList();
+      const names = namesList.map((e) => e.text());
+      expect(names).toEqual(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
+    });
+
+    it('should show all names if filter is just spaces', async () => {
+      await filterInput.setValue('   ');
+      updateNamesList();
+      const names = namesList.map((e) => e.text());
+      expect(names).toEqual(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
     });
   });
 
@@ -75,6 +84,7 @@ describe('App', () => {
     it('should exist the create button', () => {
       expect(createButton.exists()).toBeTruthy();
     });
+    // happy path
     it('should show the name in the names list', async () => {
       nameInput.setValue('John');
       surnameInput.setValue('Doe');
@@ -83,12 +93,38 @@ describe('App', () => {
       expect(timesFound('Doe, John')).toBe(1);
     });
 
-    it('should create the name even if its entered with spaces and start and end', async () => {
+    it('should create the name even if its entered with spaces at start and end', async () => {
       nameInput.setValue('    John    ');
       surnameInput.setValue('    Doe    ');
       await createButton.trigger('click');
       updateNamesList();
       expect(timesFound('Doe, John')).toBe(1);
+    });
+
+    it('should clear name and surname inputs after a new creation', async () => {
+      nameInput.setValue('John');
+      surnameInput.setValue('Doe');
+      await createButton.trigger('click');
+      expect(nameInput.element.value).toBe('');
+      expect(surnameInput.element.value).toBe('');
+    });
+    // error cases
+    it('should not create the name if its empty', async () => {
+      nameInput.setValue('');
+      surnameInput.setValue('');
+      await createButton.trigger('click');
+      expect(namesList.length).toBe(3);
+      updateNamesList();
+      expect(namesList.length).toBe(3);
+    });
+
+    it('should not create the name if its just spaces', async () => {
+      nameInput.setValue('    ');
+      surnameInput.setValue('    ');
+      await createButton.trigger('click');
+      expect(namesList.length).toBe(3);
+      updateNamesList();
+      expect(namesList.length).toBe(3);
     });
 
     it('should not create the name when it contains numbers or charater', async () => {
@@ -101,21 +137,23 @@ describe('App', () => {
       expect(timesFound('D@3-, J#0n')).toBe(0);
     });
 
-    it('should not create a new name if it exist already', async () => {
+    it('should not create the name when it contains spaces', async () => {
+      nameInput.setValue('John Doe');
+      surnameInput.setValue('Sullivan');
+      expect(namesList.length).toBe(3);
+      await createButton.trigger('click');
+      updateNamesList();
+      expect(namesList.length).toBe(3);
+      expect(timesFound('Sullivan, John Doe')).toBe(0);
+    });
+
+    it('should not create the name if it exist already', async () => {
       expect(timesFound('Emil, Hans')).toBe(1);
       nameInput.setValue('Hans');
       surnameInput.setValue('Emil');
       await createButton.trigger('click');
       updateNamesList();
       expect(timesFound('Emil, Hans')).toBe(1);
-    });
-
-    it('should clear name and surname inputs after a new creation', async () => {
-      nameInput.setValue('John');
-      surnameInput.setValue('Doe');
-      await createButton.trigger('click');
-      expect(nameInput.element.value).toBe('');
-      expect(surnameInput.element.value).toBe('');
     });
 
     it('should not clear name and surname inputs after a failing name creation', async () => {
@@ -132,7 +170,7 @@ describe('App', () => {
     it('should exist the update button', () => {
       expect(updateButton.exists()).toBeTruthy();
     });
-
+    // happy path
     it('should update a name', async () => {
       await selectInput.setValue('Mustermann, Max');
       await nameInput.setValue('Juan');
@@ -142,6 +180,67 @@ describe('App', () => {
       expect(timesFound('Perez, Juan')).toBe(1);
       expect(timesFound('Mustermann, Max')).toBe(0);
     });
+
+    it('should update the name even if its entered with spaces at start and end', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('   Juan   ');
+      await surnameInput.setValue('   Perez   ');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Perez, Juan')).toBe(1);
+    });
+    // error cases
+    it('should not update the name if its empty', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('');
+      await surnameInput.setValue('');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Mustermann, Max')).toBe(1);
+    });
+
+    it('should not update the name if nothing is selected', async () => {
+      await updateButton.trigger('click');
+      updateNamesList();
+      const names = namesList.map((e) => e.text());
+      expect(names).toEqual(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
+    });
+
+    it('should not update the name if its just spaces', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('    ');
+      await surnameInput.setValue('    ');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Mustermann, Max')).toBe(1);
+    });
+
+    it('should not update the name when it contains numbers or charater', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('J#0n');
+      await surnameInput.setValue('D@3-');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Mustermann, Max')).toBe(1);
+    });
+
+    it('should not update the name when it contains spaces', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('John Doe');
+      await surnameInput.setValue('Sullivan');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Mustermann, Max')).toBe(1);
+    });
+
+    it('should not update the name if it exist already', async () => {
+      await selectInput.setValue('Mustermann, Max');
+      await nameInput.setValue('Hans');
+      await surnameInput.setValue('Emil');
+      await updateButton.trigger('click');
+      updateNamesList();
+      expect(timesFound('Mustermann, Max')).toBe(1);
+    });
   });
 
   describe('when deleting a name', () => {
@@ -149,6 +248,7 @@ describe('App', () => {
     it('should exist the delete button', () => {
       expect(deleteButton.exists()).toBeTruthy();
     });
+    // happy path
     it('should delete a name', async () => {
       expect(namesList.length).toBe(3);
       await selectInput.setValue('Emil, Hans');
@@ -156,6 +256,13 @@ describe('App', () => {
       updateNamesList();
       expect(namesList.length).toBe(2);
       expect(timesFound('Emil, Hans')).toBe(0);
+    });
+    // error cases
+    it('should not delete a name if nothing is selected', async () => {
+      await deleteButton.trigger('click');
+      updateNamesList();
+      const names = namesList.map((e) => e.text());
+      expect(names).toEqual(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
     });
   });
 
