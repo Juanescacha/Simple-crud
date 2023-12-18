@@ -1,6 +1,8 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue';
 
+document.body.style.zoom = 2;
+
 const names = reactive(['Emil, Hans', 'Mustermann, Max', 'Teach, Roman']);
 const selected = ref('');
 const prefix = ref('');
@@ -57,6 +59,7 @@ function hasValidInput() {
     <input
       v-model="prefix"
       placeholder="Filter prefix"
+      class="w-56 mb-2"
       data-ui="filter"
     />
   </div>
@@ -64,6 +67,7 @@ function hasValidInput() {
   <select
     size="5"
     v-model="selected"
+    class="mr-4"
     data-ui="crud-user-list"
   >
     <option
@@ -88,21 +92,26 @@ function hasValidInput() {
       data-ui="surname"
   /></label>
 
-  <div class="buttons">
+  <div class="buttons mt-3">
     <button
       @click="create"
+      class="bg-green-400 hover:bg-green-300 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-slate-50 focus:outline-none"
       data-ui="create"
     >
       Create
     </button>
     <button
       @click="update"
+      :disabled="!selected"
+      class="bg-sky-400 hover:bg-sky-300 focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-400 focus:outline-none"
       data-ui="update"
     >
       Update
     </button>
     <button
       @click="del"
+      :disabled="!selected"
+      class="bg-red-400 hover:bg-red-300 focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-400 focus:outline-none"
       data-ui="delete"
     >
       Delete
@@ -111,10 +120,6 @@ function hasValidInput() {
 </template>
 
 <style>
-* {
-  font-size: inherit;
-}
-
 input {
   display: block;
   margin-bottom: 10px;
@@ -131,6 +136,6 @@ select {
 }
 
 button + button {
-  margin-left: 5px;
+  margin-left: 7px;
 }
 </style>
