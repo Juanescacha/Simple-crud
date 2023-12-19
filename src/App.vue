@@ -9,6 +9,9 @@ const prefix = ref('');
 const first = ref('');
 const last = ref('');
 
+const message = ref('');
+const error = ref(false);
+
 const filteredNames = computed(() =>
   names.filter((n) =>
     n.toLowerCase().startsWith(prefix.value.trim().toLowerCase())
@@ -25,33 +28,51 @@ function create() {
     if (!names.includes(fullName)) {
       names.push(fullName);
       first.value = last.value = '';
+      updateMessage('Name created successfully!');
+    } else {
+      updateMessage('Name already exists', true);
     }
+  } else {
+    updateMessage('Invalid input', true);
   }
 }
 
 function update() {
   const fullName = `${last.value.trim()}, ${first.value.trim()}`;
-  if (hasValidInput() && selected.value && !names.includes(fullName)) {
-    const i = names.indexOf(selected.value);
-    names[i] = selected.value = fullName;
+  if (hasValidInput()) {
+    if (!names.includes(fullName)) {
+      const i = names.indexOf(selected.value);
+      names[i] = selected.value = fullName;
+      updateMessage('Name updated successfully!');
+    } else {
+      updateMessage('Name already exists', true);
+    }
+  } else {
+    updateMessage('Invalid input', true);
   }
 }
 
 function del() {
-  if (selected.value) {
-    const i = names.indexOf(selected.value);
-    names.splice(i, 1);
-    selected.value = first.value = last.value = '';
-  }
+  const i = names.indexOf(selected.value);
+  names.splice(i, 1);
+  selected.value = first.value = last.value = '';
+  updateMessage('Name deleted successfully!');
 }
 
 function hasValidInput() {
   const validNameRegex = /^[a-zA-Z]+$/;
   const name = first.value.trim();
   const surname = last.value.trim();
-
   return validNameRegex.test(name) && validNameRegex.test(surname);
 }
+
+const updateMessage = (msg, isError = false) => {
+  error.value = isError;
+  message.value = msg;
+  setTimeout(() => {
+    message.value = '';
+  }, 3000);
+};
 </script>
 
 <template>
@@ -117,6 +138,19 @@ function hasValidInput() {
       Delete
     </button>
   </div>
+  <Transition>
+    <span
+      v-if="message"
+      class="block font-bold outline w-[56.5%] p-1 px-4 rounded-full mt-4 text-center truncate"
+      :class="
+        error
+          ? 'bg-red-500/20  outline-red-500/50 text-red-500'
+          : 'bg-green-500/20  outline-green-500/50 text-green-500'
+      "
+    >
+      {{ message }}
+    </span>
+  </Transition>
 </template>
 
 <style>
@@ -137,5 +171,15 @@ select {
 
 button + button {
   margin-left: 7px;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>
